@@ -1,14 +1,30 @@
 import React from "react";
-import { useEffect } from "react";
-import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  FlatList,
+} from "react-native";
 import firebase from "./src/service/firebaseConnection";
 
 // Desativar avisos de yarn
 console.disableYellowBox = true;
 
+interface Props {
+  key: any;
+  email: any;
+  name: any;
+}
+
 export default function App() {
   const [nome, setNome] = useState("carregando...");
+  const [getAllDados, setGetAllDados] = useState<any[]>([]);
+  const [email, setEmail] = useState<string>();
+  const [name, setName] = useState<string>();
 
   async function pegaNome() {
     {
@@ -19,24 +35,24 @@ export default function App() {
       --> Essa reqwuisicao do fire base esta pegando um no do meu banco de dados
       */
     }
-    await firebase
+    /* await firebase
       .database()
       .ref("nome")
       .on("value", (snapshot) => {
         setNome(snapshot.val());
-      });
+      }); */
 
     {
       /*Esse, diferente do olheiro, pega apenas uma vez o valor no banco de dados,
       nao atualizando de acordo com a mudanca
       */
     }
-    await firebase
+    /* await firebase
       .database()
       .ref("nome")
       .once("value", (snapshot) => {
         setNome(snapshot.val());
-      });
+      }); */
 
     {
       /*Esse, diferente do olheiro, pega apenas uma vez o valor no banco de dados,
@@ -45,12 +61,12 @@ export default function App() {
       --> Essa requisicao esta pegando o dado em um diretorio passado pelo ref
       */
     }
-    await firebase
+    /* await firebase
       .database()
       .ref("usuarios/1/nome")
       .once("value", (snapshot) => {
         setNome(snapshot.val());
-      });
+      }); */
 
     {
       /*Esse, diferente do olheiro, pega apenas uma vez o valor no banco de dados,
@@ -59,21 +75,117 @@ export default function App() {
       --> Essa requisicao esta pegando o index 1 inteiro
       */
     }
-    await firebase
+    /* await firebase
       .database()
       .ref("usuarios/1")
       .once("value", (snapshot) => {
         setNome(snapshot.val().idade);
+      }); */
+
+    // Para criar um nó
+    /* await firebase.database().ref("tipo").set("Marcelo bobo"); */
+
+    // Para Escluir um nó
+    /* await firebase.database().ref("tipo").remove(); */
+
+    // Usado para criar um chield no banco Firebase.
+    /* await firebase.database().ref("usuarios").child(3).set({
+      nome: "igao da massa",
+      idade: 24,
+    }); */
+
+    // Usado para atulizar um item dentro de um chield
+    /* await firebase.database().ref("usuarios").child(3).update({
+      nome: "Igao não e bolado",
+    }); */
+
+    // Essa função é responsavel por pegar todos os itens de um chield,
+    // sendo no caso esse o usuario. ISSO E UM OLHEIRO, ENTAO ATUALIZA NA HORA
+    /* await firebase
+      .database()
+      .ref("usuarios")
+      .on("value", (snapshot) => {
+        setGetAllDados([]);
+        snapshot.forEach((chieldItem) => {
+          const dados = {
+            key: chieldItem.key,
+            name: chieldItem.val().nome,
+            email: chieldItem.val().email,
+          };
+
+          setGetAllDados((oldArray) => [...oldArray, dados]);
+        });
+      }); */
+  }
+
+  async function cadastrar() {
+    if (nome !== "" && email !== "") {
+      // Esse Comando serve para gerar uma chave aleatória e cadastrar o
+      // usuario dentro do bando de dados.
+      const usuarios = await firebase.database().ref("usuarios");
+      const chave: any = usuarios.push().key;
+
+      usuarios.child(chave).set({
+        nome: nome,
+        email: email,
       });
+    }
   }
 
   useEffect(() => {
     pegaNome();
+    console.log(getAllDados);
   }, []);
 
   return (
     <View style={styles.container}>
-      <Text>{nome}</Text>
+      <TextInput
+        style={{
+          borderColor: "black",
+          borderWidth: 2,
+          width: "100%",
+          height: 40,
+          marginBottom: 20,
+        }}
+        placeholder="email"
+        onChangeText={(text) => setEmail(text)}
+      />
+      <TextInput
+        style={{
+          borderColor: "black",
+          borderWidth: 2,
+          width: "100%",
+          height: 40,
+        }}
+        placeholder="nome"
+        onChangeText={(text) => setNome(text)}
+      />
+
+      <TouchableOpacity
+        style={{
+          marginTop: 20,
+          backgroundColor: "red",
+          height: 60,
+          width: 120,
+          justifyContent: "center",
+          alignItems: "center",
+          borderRadius: 10,
+        }}
+        onPress={() => cadastrar()}
+      >
+        <Text style={{ color: "#FFF", fontWeight: "bold" }}>Enviar dados</Text>
+      </TouchableOpacity>
+
+      <FlatList
+        data={getAllDados}
+        keyExtractor={(item) => item.key}
+        renderItem={({ item }) => (
+          <View>
+            <Text>{item.name}</Text>
+            <Text>{item.email}</Text>
+          </View>
+        )}
+      />
     </View>
   );
 }
