@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
   FlatList,
+  Alert,
 } from "react-native";
 import firebase from "./src/service/firebaseConnection";
 
@@ -21,10 +22,10 @@ interface Props {
 }
 
 export default function App() {
-  const [nome, setNome] = useState("carregando...");
   const [getAllDados, setGetAllDados] = useState<any[]>([]);
-  const [email, setEmail] = useState<string>();
+  const [email, setEmail] = useState<string>("");
   const [name, setName] = useState<string>();
+  const [password, setPassword] = useState<string>("");
 
   async function pegaNome() {
     {
@@ -119,7 +120,7 @@ export default function App() {
   }
 
   async function cadastrar() {
-    if (nome !== "" && email !== "") {
+    /* if (nome !== "" && email !== "") {
       // Esse Comando serve para gerar uma chave aleatória e cadastrar o
       // usuario dentro do bando de dados.
       const usuarios = await firebase.database().ref("usuarios");
@@ -129,7 +130,41 @@ export default function App() {
         nome: nome,
         email: email,
       });
-    }
+    } */
+    //Esse códgio e responsavel por fazer o usuarios cadastrar seus dados
+    // atraves de uma autenticação feita pelo firebase, esse no caso seria o
+    // de email e senha.
+    /* await firebase
+      .auth()
+      .createUserWithEmailAndPassword(email, password)
+      .then((response: any) => {
+        Alert.alert("Usuario criado com sucesso", response);
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+
+        if (errorCode === "auth/weak-password") {
+          alert("Sua senha deve ter pelomenos 6 caracteres");
+        } else {
+          if (errorCode === "auth/invalid-email") {
+            alert("Seu email é invalido");
+          } else {
+            alert(errorMessage);
+          }
+        }
+      }); */
+    // Esse codigo é feito para o usuario fazr login de acordo com o email
+    // cadastrado
+    /* await firebase
+      .auth()
+      .signInWithEmailAndPassword(email, password)
+      .then((response) => {
+        alert("Login feito com sucesso " + response.user?.email);
+      })
+      .catch((error) => {
+        alert("Usuario não encontrado");
+      }); */
   }
 
   useEffect(() => {
@@ -158,7 +193,7 @@ export default function App() {
           height: 40,
         }}
         placeholder="nome"
-        onChangeText={(text) => setNome(text)}
+        onChangeText={(text) => setPassword(text)}
       />
 
       <TouchableOpacity
@@ -175,17 +210,6 @@ export default function App() {
       >
         <Text style={{ color: "#FFF", fontWeight: "bold" }}>Enviar dados</Text>
       </TouchableOpacity>
-
-      <FlatList
-        data={getAllDados}
-        keyExtractor={(item) => item.key}
-        renderItem={({ item }) => (
-          <View>
-            <Text>{item.name}</Text>
-            <Text>{item.email}</Text>
-          </View>
-        )}
-      />
     </View>
   );
 }
